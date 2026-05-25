@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>숲속의 리듬 스케치북 🌿</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 귀여운 손글씨 폰트 -->
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        body { 
+            font-family: 'Nanum Pen Script', cursive; 
+            background-color: #fdfaf6;
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: #57534e;
+            min-height: 100vh;
+        }
+
+        .sketch-card {
+            background: #fff;
+            border: 2px solid #e7e5e4;
+            border-radius: 30px;
+            box-shadow: 10px 10px 0px rgba(231, 229, 228, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 삐뚤빼뚤한 버튼 효과 */
+        .sketch-btn {
+            background: #fdfaf6;
+            border: 2px solid #d6d3d1;
+            transition: all 0.3s ease;
+            font-size: 1.75rem;
+            width: 100%;
+        }
+        .sketch-btn:hover {
+            transform: rotate(-1deg) scale(1.02);
+            background: #fefce8;
+            border-color: #fcd34d;
+        }
+
+        .title-font { font-family: 'Nanum Myeongjo', serif; }
+        
+        /* 살짝쿵 떠다니는 장식 */
+        @keyframes sway {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+        .sway { animation: sway 3s infinite ease-in-out; }
+    </style>
+</head>
+<body class="p-4 flex items-center justify-center">
+
+    <div id="app" class="w-full max-w-sm sketch-card p-8">
+        
+        <!-- Decoration -->
+        <div class="absolute -top-4 -right-4 text-4xl sway">✏️</div>
+
+        <!-- Selection Screen -->
+        <div id="selection-screen" class="space-y-6">
+            <div class="text-center space-y-1">
+                <h1 class="title-font text-4xl font-bold text-[#57534e]">박수음악</h1>
+                <p class="text-lg text-[#a8a29e]">오늘의 리듬을 골라주세요!</p>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-3">
+                <button onclick="selectGroup(1)" class="sketch-btn py-3 rounded-2xl">1모둠 🌿</button>
+                <button onclick="selectGroup(2)" class="sketch-btn py-3 rounded-2xl">2모둠 🍄</button>
+                <button onclick="selectGroup(3)" class="sketch-btn py-3 rounded-2xl">3모둠 🌸</button>
+                <button onclick="selectGroup(4)" class="sketch-btn py-3 rounded-2xl">4모둠 🍃</button>
+                <button onclick="selectGroup(5)" class="sketch-btn py-3 rounded-2xl">5모둠 🐿️</button>
+            </div>
+
+            <!-- QR Section -->
+            <div class="mt-8 pt-6 border-t-2 border-dashed border-[#e7e5e4] text-center">
+                <p class="text-xs text-[#a8a29e] mb-4 uppercase tracking-widest font-bold">QR 스캔으로 접속하기</p>
+                <div id="qrcode" class="p-3 bg-white rounded-xl inline-block border-2 border-[#e7e5e4] shadow-sm"></div>
+            </div>
+        </div>
+
+        <!-- Detail Screen -->
+        <div id="detail-screen" class="hidden space-y-6 animate-in fade-in duration-500">
+            <div class="text-center space-y-1">
+                <h2 id="group-title" class="title-font text-2xl font-bold text-[#57534e]"></h2>
+            </div>
+            
+            <div class="bg-[#fcfbf9] p-4 rounded-2xl border-2 border-dashed border-[#d6d3d1]">
+                <img id="rhythm-image" src="https://placehold.co/400x200/fcfbf9/a8a29e?text=악보가+기다려요" alt="리듬 악보" class="w-full h-auto rounded-lg">
+            </div>
+
+            <div class="bg-[#fffdfa] p-4 rounded-2xl border-2 border-[#e7e5e4]">
+                <p class="text-center text-sm text-[#a8a29e] mb-2">리듬 연주 들어보기</p>
+                <audio id="rhythm-audio" controls class="w-full"></audio>
+            </div>
+            
+            <div class="text-center mt-4">
+                <p class="text-xs text-[#d6d3d1]">※ 오늘도 즐거운 연주 되세요!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const RHYTHM_DATA = {
+            1: { name: "1모둠", rhythm: "리듬 2", imgSrc: "리듬2.png", audioSrc: "리듬2.wav" },
+            2: { name: "2모둠", rhythm: "리듬 3", imgSrc: "리듬3.png", audioSrc: "리듬3.wav" },
+            3: { name: "3모둠", rhythm: "리듬 5", imgSrc: "리듬5.png", audioSrc: "리듬5.wav" },
+            4: { name: "4모둠", rhythm: "리듬 1", imgSrc: "리듬1.png", audioSrc: "리듬1.wav" },
+            5: { name: "5모둠", rhythm: "리듬 4", imgSrc: "리듬4.png", audioSrc: "리듬4.wav" }
+        };
+
+        // QR Code generation (Size increased)
+        new QRCode(document.getElementById("qrcode"), {
+            text: window.location.href,
+            width: 160,
+            height: 160,
+            colorDark : "#57534e",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        function selectGroup(groupId) {
+            const data = RHYTHM_DATA[groupId];
+            
+            // 숫자 없이 모둠 이름과 리듬으로만 표시
+            document.getElementById('group-title').innerText = `${data.name}의 리듬`;
+            document.getElementById('rhythm-image').src = data.imgSrc;
+            
+            const audioPlayer = document.getElementById('rhythm-audio');
+            audioPlayer.src = data.audioSrc;
+
+            document.getElementById('selection-screen').classList.add('hidden');
+            document.getElementById('detail-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
